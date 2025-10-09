@@ -7,7 +7,6 @@ app.registerExtension({
         if (nodeData.name !== "ImageCompareNode") return;
 
         const origOnNodeCreated = nodeType.prototype.onNodeCreated;
-
         nodeType.prototype.onNodeCreated = function () {
             if (origOnNodeCreated) origOnNodeCreated.apply(this, arguments);
 
@@ -87,11 +86,13 @@ app.registerExtension({
 
                 if (this.imgA) {
                     const splitX = margin + drawWidth * this.sliderPos;
+                    ctx.save();
                     ctx.beginPath();
                     ctx.rect(margin, margin + topOffset, splitX - margin, drawHeight);
                     ctx.clip();
 
                     ctx.drawImage(this.imgA, margin, margin + topOffset, drawWidth, drawHeight);
+                    ctx.restore();
 
                     ctx.strokeStyle = "#00e0ff";
                     ctx.lineWidth = 2;
