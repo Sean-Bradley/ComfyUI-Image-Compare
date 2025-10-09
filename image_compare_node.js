@@ -68,18 +68,9 @@ app.registerExtension({
             };
 
             this.onMouseUp = function () {
-                //if (this.dragging) {
                 this.dragging = false;
-                //app.graph.setDirtyCanvas(true);
-                //}
+                app.graph.setDirtyCanvas(true);
             };
-
-            // this.onMouseLeave = function () {
-            //     if (this.dragging) {
-            //         this.dragging = false;
-            //         app.graph.setDirtyCanvas(true);
-            //     }
-            // };
 
             this.onDrawForeground = function (ctx) {
                 ctx.save();
@@ -96,13 +87,11 @@ app.registerExtension({
 
                 if (this.imgA) {
                     const splitX = margin + drawWidth * this.sliderPos;
-                    ctx.save();
                     ctx.beginPath();
                     ctx.rect(margin, margin + topOffset, splitX - margin, drawHeight);
                     ctx.clip();
 
                     ctx.drawImage(this.imgA, margin, margin + topOffset, drawWidth, drawHeight);
-                    ctx.restore();
 
                     ctx.strokeStyle = "#00e0ff";
                     ctx.lineWidth = 2;
@@ -135,7 +124,7 @@ app.registerExtension({
 
                     this.imgA.onload = this.imgB.onload = () => app.graph.setDirtyCanvas(true);
                 } else {
-                    console.warn("[SBCODE.ImageCompareNode] ⚠️ Missing image base64 data.");
+                    console.warn("[SBCODE.ImageCompareNode] Missing image base64 data.");
                 }
             };
         };
