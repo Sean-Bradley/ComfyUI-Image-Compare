@@ -26,3 +26,9 @@ Or you can double click the workspace and search for `image compare`.
 ## Example Usage
 
 ![](example-usage.jpg)
+
+## Tutorial
+
+How to use this image compare tool? See this video.
+
+[![ComfyUI Image Compare Custom Node](https://img.youtube.com/vi/dbakhoHmfrw/0.jpg)](https://youtu.be/dbakhoHmfrw)
