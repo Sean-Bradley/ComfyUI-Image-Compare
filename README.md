@@ -29,6 +29,6 @@ Or you can double click the workspace and search for `image compare`.
 
 ## Tutorial
 
-How to use this image compare tool? See this video.
+How to use this image compare tool? See this [video](https://youtu.be/dbakhoHmfrw).
 
 [![ComfyUI Image Compare Custom Node](https://img.youtube.com/vi/dbakhoHmfrw/0.jpg)](https://youtu.be/dbakhoHmfrw)
