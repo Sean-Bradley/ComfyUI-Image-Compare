@@ -2,6 +2,7 @@ from PIL import Image
 import numpy
 import io
 import base64
+import gc
 
 
 class ImageCompareNode:
@@ -25,33 +26,48 @@ class ImageCompareNode:
         if image_b is None or len(image_b) == 0:
             return {}
 
-        def tensor_to_pil(img_tensor):
-            img = (img_tensor[0].cpu().numpy() *
-                   255).clip(0, 255).astype(numpy.uint8)
-            return Image.fromarray(img)
+        try:
+            def tensor_to_pil(img_tensor):
+                img = (img_tensor[0].cpu().numpy() *
+                       255).clip(0, 255).astype(numpy.uint8)
+                return Image.fromarray(img)
 
-        pil_imgA = tensor_to_pil(image_a)
-        pil_imgB = tensor_to_pil(image_b)
+            pil_imgA = tensor_to_pil(image_a)
+            pil_imgB = tensor_to_pil(image_b)
 
-        imgA_b64 = self.pil_to_base64(pil_imgA)
-        imgB_b64 = self.pil_to_base64(pil_imgB)
+            imgA_b64 = self.pil_to_base64(pil_imgA)
+            imgB_b64 = self.pil_to_base64(pil_imgB)
 
-        print("Encoded base64 images generated.")
+            # Explicitly close PIL images to free memory
+            pil_imgA.close()
+            pil_imgB.close()
+            del pil_imgA, pil_imgB
 
-        return {
-            "ui": {
-                "b64_a": imgA_b64,
-                "b64_b": imgB_b64,
+            print("Encoded base64 images generated.")
+
+            return {
+                "ui": {
+                    "b64_a": imgA_b64,
+                    "b64_b": imgB_b64,
+                }
             }
-        }
+        finally:
+            # Force garbage collection after heavy operations
+            gc.collect()
 
     @staticmethod
     def pil_to_base64(img: Image.Image):
         """Convert PIL image to base64 for sending to JS"""
         buffer = io.BytesIO()
         img.save(buffer, format="PNG")
-        encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        return f"data:image/png;base64,{encoded}"
+        buffer.seek(0)
+        encoded = base64.b64encode(buffer.read()).decode("utf-8")
+        buffer.close()
+        del buffer
+        # Return as list of chunks to avoid creating huge strings
+        # The JS will join them
+        chunk_size = 65536
+        return [encoded[i:i+chunk_size] for i in range(0, len(encoded), chunk_size)]
 
 
 NODE_CLASS_MAPPINGS = {"ImageCompareNode": ImageCompareNode}

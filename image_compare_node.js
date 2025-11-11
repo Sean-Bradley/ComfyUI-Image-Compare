@@ -97,8 +97,13 @@ app.registerExtension({
                 if (this.dragging) {
                     let x = pos[0] - drawX;
                     x = Math.max(0, Math.min(drawW, x));
-                    this.sliderPos = x / drawW;
-                    app.graph.setDirtyCanvas(true, true);
+                    const newSliderPos = x / drawW;
+                    
+                    // Only update canvas if slider position actually changed
+                    if (Math.abs(newSliderPos - this.sliderPos) > 0.001) {
+                        this.sliderPos = newSliderPos;
+                        app.graph.setDirtyCanvas(true, false);
+                    }
                 }
             };
 
@@ -200,14 +205,45 @@ app.registerExtension({
                 if (origOnExecuted) origOnExecuted.apply(this, arguments);
 
                 if (output?.b64_a && output?.b64_b) {
-                    this.imgA = new Image();
-                    this.imgA.src = output.b64_a.join("");
-                    this.imgB = new Image();
-                    this.imgB.src = output.b64_b.join("");
+                    // Clean up old images and remove event listeners before creating new ones
+                    if (this.imgA) {
+                        this.imgA.onload = null;
+                        this.imgA.onerror = null;
+                        this.imgA.src = "";
+                    }
+                    if (this.imgB) {
+                        this.imgB.onload = null;
+                        this.imgB.onerror = null;
+                        this.imgB.src = "";
+                    }
 
-                    const refresh = () => app.graph.setDirtyCanvas(true, true);
+                    this.imgA = new Image();
+                    this.imgB = new Image();
+
+                    // Use a flag to ensure refresh callback only fires once per image
+                    let loadCount = 0;
+                    const refresh = () => {
+                        loadCount++;
+                        if (loadCount === 2) {
+                            // Both images loaded, trigger canvas update only once
+                            app.graph.setDirtyCanvas(true, false);
+                        }
+                    };
+
                     this.imgA.onload = refresh;
                     this.imgB.onload = refresh;
+                    
+                    // Handle errors gracefully
+                    this.imgA.onerror = () => console.warn("[SBCODE.ImageCompareNode] Failed to load image A");
+                    this.imgB.onerror = () => console.warn("[SBCODE.ImageCompareNode] Failed to load image B");
+
+                    // Set sources after attaching handlers
+                    // Handle both chunked arrays and plain strings
+                    const imgA_data = Array.isArray(output.b64_a) ? output.b64_a.join("") : output.b64_a;
+                    const imgB_data = Array.isArray(output.b64_b) ? output.b64_b.join("") : output.b64_b;
+                    
+                    this.imgA.src = "data:image/png;base64," + imgA_data;
+                    this.imgB.src = "data:image/png;base64," + imgB_data;
                 } else {
                     console.warn("[SBCODE.ImageCompareNode] Missing image base64 data.");
                 }
