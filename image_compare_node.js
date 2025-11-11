@@ -184,6 +184,13 @@ app.registerExtension({
                 ctx.shadowOffsetY = 2;
                 ctx.fillText("A", drawX + 8, drawY + 20);
                 ctx.fillText("B", drawX + drawW - 20, drawY + 20);
+                //draw dimensions
+                ctx.font = "normal 10px sans-serif";
+                if (this.imgA && this.imgB) {
+                    ctx.fillText(this.imgA.width + "x" + this.imgA.height, drawX + 8, drawY + 34);
+                    ctx.textAlign = "right";
+                    ctx.fillText(this.imgB.width + "x" + this.imgB.height, drawX + drawW - 10, drawY + 34);
+                }
 
                 ctx.restore();
             };
