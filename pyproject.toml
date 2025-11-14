@@ -1,6 +1,6 @@
 [project]
 name = "comfyui-image-compare"
-description = "Compare two images using ComfyUI. Connect images to both image_a and image_b inputs. Press RUN. Then use the slider to compare. Best used when two images are very similar and you want to see the differences very closely. Search using the manager for "image compare", or "imagecompare"
+description = "Compare two images using ComfyUI. Connect images to both image_a and image_b inputs. Press RUN. Then use the slider to compare. Best used when two images are very similar and you want to see the differences very closely. Search using the manager for `image compare`, or `imagecompare`."
 version = "2.0.1"
 license = "Apache License, Version 2.0"
 
