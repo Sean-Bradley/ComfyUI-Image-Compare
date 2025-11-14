@@ -1,13 +1,16 @@
 [project]
 name = "comfyui-image-compare"
-description = "Compare two images using ComfyUI. Connect images to both image_a and image_b inputs. Press RUN. Then use the slider to compare. Best used when two images are very similar and you want to see the differences very closely. Search for the manager for image compare, or imagecompare."
-version = "2.0.0"
+description = "Compare two images using ComfyUI. Connect images to both image_a and image_b inputs. Press RUN. Then use the slider to compare. Best used when two images are very similar and you want to see the differences very closely. Search using the manager for "image compare", or "imagecompare"
+version = "2.0.1"
 license = "Apache License, Version 2.0"
 
 [project.urls]
 Repository = "https://github.com/Sean-Bradley/ComfyUI-Image-Compare"
+#  Used by Comfy Registry https://registry.comfy.org
+Documentation = "https://github.com/Sean-Bradley/ComfyUI-Image-Compare/wiki"
+"Bug Tracker" = "https://github.com/Sean-Bradley/ComfyUI-Image-Compare/issues"
 
 [tool.comfy]
 PublisherId = "sbcode"
 DisplayName = "ComfyUI Image Compare"
-Icon = ""
+Icon = "https://avatars.githubusercontent.com/u/59069470"
