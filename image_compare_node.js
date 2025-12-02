@@ -33,22 +33,6 @@ app.registerExtension({
             this.dragging = false;
             this.hovered = false;
 
-            // property to control aspect-keeping (default ON)
-            this.properties = this.properties || {};
-            if (this.properties.keep_aspect === undefined) {
-                this.properties.keep_aspect = true;
-            }
-
-            // Optional toggle widget in the node
-            if (!this._aspectWidgetAdded && this.addWidget) {
-                this.addWidget("checkbox", "Keep Aspect", this.properties.keep_aspect, (v) => {
-                    this.properties.keep_aspect = !!v;
-                    this.setDirtyCanvas?.(true, true);
-                    app.graph.setDirtyCanvas(true, true);
-                });
-                this._aspectWidgetAdded = true;
-            }
-
             // Common geometry used across mouse + draw
             const getDrawGeom = () => {
                 const margin = 10;
@@ -82,7 +66,6 @@ app.registerExtension({
 
                 this.dragging = true;
                 this.sliderPos = Math.max(0, Math.min(1, x / drawW));
-                app.graph.setDirtyCanvas(true, true);
                 return true;
             };
 
@@ -98,18 +81,16 @@ app.registerExtension({
                     let x = pos[0] - drawX;
                     x = Math.max(0, Math.min(drawW, x));
                     const newSliderPos = x / drawW;
-                    
+
                     // Only update canvas if slider position actually changed
                     if (Math.abs(newSliderPos - this.sliderPos) > 0.001) {
                         this.sliderPos = newSliderPos;
-                        app.graph.setDirtyCanvas(true, false);
                     }
                 }
             };
 
             this.onMouseUp = function () {
                 this.dragging = false;
-                app.graph.setDirtyCanvas(true, true);
             };
 
             this.onDrawForeground = function (ctx) {
@@ -220,19 +201,6 @@ app.registerExtension({
                     this.imgA = new Image();
                     this.imgB = new Image();
 
-                    // Use a flag to ensure refresh callback only fires once per image
-                    let loadCount = 0;
-                    const refresh = () => {
-                        loadCount++;
-                        if (loadCount === 2) {
-                            // Both images loaded, trigger canvas update only once
-                            app.graph.setDirtyCanvas(true, false);
-                        }
-                    };
-
-                    this.imgA.onload = refresh;
-                    this.imgB.onload = refresh;
-                    
                     // Handle errors gracefully
                     this.imgA.onerror = () => console.warn("[SBCODE.ImageCompareNode] Failed to load image A");
                     this.imgB.onerror = () => console.warn("[SBCODE.ImageCompareNode] Failed to load image B");
@@ -241,7 +209,7 @@ app.registerExtension({
                     // Handle both chunked arrays and plain strings
                     const imgA_data = Array.isArray(output.b64_a) ? output.b64_a.join("") : output.b64_a;
                     const imgB_data = Array.isArray(output.b64_b) ? output.b64_b.join("") : output.b64_b;
-                    
+
                     this.imgA.src = "data:image/png;base64," + imgA_data;
                     this.imgB.src = "data:image/png;base64," + imgB_data;
                 } else {
