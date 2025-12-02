@@ -77,6 +77,12 @@ app.registerExtension({
                 const dist = Math.hypot(pos[0] - splitX, pos[1] - handleY);
                 this.hovered = dist < 15;
 
+                // Check if mouse button is no longer pressed (detect mouse up from event)
+                if (this.dragging && e && e.buttons !== undefined && e.buttons === 0) {
+                    //console.log("Mouse button released (detected in onMouseMove)");
+                    this.dragging = false;
+                }
+
                 if (this.dragging) {
                     let x = pos[0] - drawX;
                     x = Math.max(0, Math.min(drawW, x));
@@ -87,10 +93,6 @@ app.registerExtension({
                         this.sliderPos = newSliderPos;
                     }
                 }
-            };
-
-            this.onMouseUp = function () {
-                this.dragging = false;
             };
 
             this.onDrawForeground = function (ctx) {
