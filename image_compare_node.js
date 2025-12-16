@@ -6,7 +6,7 @@ app.registerExtension({
     async beforeRegisterNodeDef(nodeType, nodeData) {
         if (nodeData.name !== "ImageCompareNode") return;
 
-        // --- helper for aspect-correct "contain" fit inside a box ---
+        // Helper for aspect-correct "contain" fit inside a box
         function fitContain(srcW, srcH, maxW, maxH) {
             if (!srcW || !srcH || !maxW || !maxH) {
                 return { x: 0, y: 0, w: 0, h: 0 };
@@ -41,10 +41,10 @@ app.registerExtension({
                 const drawY = margin + topOffset;
                 const drawW = this.size[0] - margin * 2;
                 const drawH = (this.size[1] - margin * 2) - topOffset;
-                return { margin, topOffset, drawX, drawY, drawW, drawH };
+                return { drawX, drawY, drawW, drawH };
             };
 
-            this.onMouseDown = function (e, pos) {
+            this.onMouseDown = function (_, pos) {
                 const { drawX, drawY, drawW, drawH } = getDrawGeom();
 
                 const x = pos[0] - drawX;
@@ -54,9 +54,8 @@ app.registerExtension({
                 if (x < 0 || x > drawW || y < 0 || y > drawH) return false;
 
                 const splitX = drawX + Math.floor(drawW * this.sliderPos);
-                const handleX = splitX;
                 const handleY = drawY + Math.floor(drawH / 2);
-                const dist = Math.hypot(pos[0] - handleX, pos[1] - handleY);
+                const dist = Math.hypot(pos[0] - splitX, pos[1] - handleY);
 
                 // Grab handle if close; otherwise jump slider to clicked x
                 if (dist < 15) {
@@ -79,7 +78,6 @@ app.registerExtension({
 
                 // Check if mouse button is no longer pressed (detect mouse up from event)
                 if (this.dragging && e && e.buttons !== undefined && e.buttons === 0) {
-                    //console.log("Mouse button released (detected in onMouseMove)");
                     this.dragging = false;
                 }
 
@@ -98,27 +96,25 @@ app.registerExtension({
             this.onDrawForeground = function (ctx) {
                 ctx.save();
 
-                const { margin, topOffset, drawX, drawY, drawW, drawH } = getDrawGeom();
+                const { drawX, drawY, drawW, drawH } = getDrawGeom();
 
                 // Background for preview area
                 ctx.fillStyle = "#111";
                 ctx.fillRect(drawX, drawY, drawW, drawH);
 
-                // Determine rects for A and B (aspect-correct if enabled)
+                // Calculate aspect-correct positioning for images
                 let rectA = { x: 0, y: 0, w: drawW, h: drawH };
                 let rectB = { x: 0, y: 0, w: drawW, h: drawH };
 
-                if (this.properties.keep_aspect) {
-                    if (this.imgA?.width && this.imgA?.height) {
-                        rectA = fitContain(this.imgA.width, this.imgA.height, drawW, drawH);
-                    }
-                    if (this.imgB?.width && this.imgB?.height) {
-                        rectB = fitContain(this.imgB.width, this.imgB.height, drawW, drawH);
-                    }
+                if (this.imgA?.width && this.imgA?.height) {
+                    rectA = fitContain(this.imgA.width, this.imgA.height, drawW, drawH);
+                }
+                if (this.imgB?.width && this.imgB?.height) {
+                    rectB = fitContain(this.imgB.width, this.imgB.height, drawW, drawH);
                 }
 
-                // Draw B as the base (full area or letterboxed)
-                if (this.imgB && rectB.w > 0 && rectB.h > 0) {
+                // Draw B as the base (aspect-correct, centered)
+                if (this.imgB) {
                     ctx.drawImage(
                         this.imgB,
                         drawX + rectB.x,
@@ -128,8 +124,8 @@ app.registerExtension({
                     );
                 }
 
-                // Draw A clipped by the slider (left part)
-                if (this.imgA && rectA.w > 0 && rectA.h > 0) {
+                // Draw A clipped by the slider (left part, aspect-correct, centered)
+                if (this.imgA) {
                     const splitX = drawX + Math.floor(drawW * this.sliderPos);
 
                     ctx.save();
@@ -188,15 +184,11 @@ app.registerExtension({
                 if (origOnExecuted) origOnExecuted.apply(this, arguments);
 
                 if (output?.b64_a && output?.b64_b) {
-                    // Clean up old images and remove event listeners before creating new ones
+                    // Clean up old images
                     if (this.imgA) {
-                        this.imgA.onload = null;
-                        this.imgA.onerror = null;
                         this.imgA.src = "";
                     }
                     if (this.imgB) {
-                        this.imgB.onload = null;
-                        this.imgB.onerror = null;
                         this.imgB.src = "";
                     }
 
